@@ -1,8 +1,14 @@
 version: "3.8"
 
 services:
-  fastapi-app:
+  api:
     build: .
-    container_name: fastapi-excel-processor
+    container_name: excel-ai-api
     ports:
       - "8000:8000"
+  ui:
+    build:
+      context: ./ui
+    container_name: excel-ai-ui
+    ports:
+      - "8001:8001"
