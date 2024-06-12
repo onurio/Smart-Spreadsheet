@@ -27,5 +27,5 @@ export async function askQuestion(sessionId: string, question: string) {
     throw new Error("Failed to get response from the server");
   }
 
-  return response.text();
+  return response.body ? response.body.getReader() : null;
 }

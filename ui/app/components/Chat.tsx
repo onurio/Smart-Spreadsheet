@@ -11,6 +11,7 @@ type Message = {
 export default function Chat({ sessionId }: { sessionId: string | null }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [question, setQuestion] = useState("");
+  const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
 
   const handleAskQuestion = async () => {
     if (!sessionId) {
@@ -20,11 +21,22 @@ export default function Chat({ sessionId }: { sessionId: string | null }) {
 
     setQuestion("");
     setMessages((prev) => [...prev, { text: question, role: "user" }]);
-
     try {
-      const data = await askQuestion(sessionId, question);
+      const reader = await askQuestion(sessionId, question);
+      const decoder = new TextDecoder("utf-8");
+      let done = false;
+      setLoadingMessage("");
+      let msg = "";
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        const chunkValue = decoder.decode(value, { stream: true });
+        msg += chunkValue;
+        setLoadingMessage((s) => s + chunkValue);
+      }
 
-      setMessages((prev) => [...prev, { text: data, role: "bot" }]);
+      setLoadingMessage(null);
+      setMessages((prev) => [...prev, { text: msg, role: "bot" }]);
     } catch (error) {
       alert(error.message);
     }
@@ -54,19 +66,11 @@ export default function Chat({ sessionId }: { sessionId: string | null }) {
         h="100%"
       >
         {messages.map((message, index) => (
-          <Paper
-            key={index}
-            p="md"
-            shadow="xs"
-            withBorder
-            maw={400}
-            ml={message.role !== "bot" ? "auto" : 0}
-            bg={message.role === "bot" ? "green" : "blue"}
-            c="white"
-          >
-            {message.text}
-          </Paper>
+          <Message key={index} msg={message} />
         ))}
+        {loadingMessage && (
+          <Message msg={{ text: loadingMessage, role: "bot" }} />
+        )}
       </Flex>
 
       {!sessionId && (
@@ -114,3 +118,20 @@ export default function Chat({ sessionId }: { sessionId: string | null }) {
     </Paper>
   );
 }
+
+const Message = ({ msg }: { msg: Message }) => {
+  const { text, role } = msg;
+  return (
+    <Paper
+      p="md"
+      shadow="xs"
+      withBorder
+      maw={400}
+      ml={role !== "bot" ? "auto" : 0}
+      bg={role === "bot" ? "green" : "blue"}
+      c="white"
+    >
+      {text}
+    </Paper>
+  );
+};
