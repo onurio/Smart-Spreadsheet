@@ -51,12 +51,7 @@ async def start_chat(file: UploadFile = File(...)):
         session_id = str(uuid.uuid4())
         sessions[session_id] = {
             "context": context,
-            "history": [
-                {
-                    "role": "system",
-                    "content": "You are a financial advisor. Please provide answers to the following questions based on the provided data. All number values are in USD unless stated otherwise",
-                }
-            ],
+            "history": [],
             "api_key": openai_api_key,
         }
 
@@ -86,7 +81,7 @@ async def chat(session_id: str, query: Query):
     history.append({"role": "user", "content": question})
 
     def generate():
-        prompt = f"Data: {context}\n\n Question: {question}"
+        prompt = f"Data: {context}\n\n Question: {question}. Please provide a detailed answer only based on the data provided. Also include the data you used to answer the question and any assumptions you made."
         stream = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=history + [{"role": "user", "content": prompt}],
