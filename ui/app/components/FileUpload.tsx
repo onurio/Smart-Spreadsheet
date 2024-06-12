@@ -1,17 +1,18 @@
+import { ArrowUpTrayIcon } from "@heroicons/react/20/solid";
+import { ActionIcon, Flex, Input } from "@mantine/core";
 import React, { useState } from "react";
-import { uploadFile, askQuestion } from "~/utils/api";
+import { uploadFile } from "~/utils/api";
 
-export default function FileUpload() {
-  const [file, setFile] = useState(null);
-  const [sessionId, setSessionId] = useState(null);
-  const [question, setQuestion] = useState("");
-  const [response, setResponse] = useState("");
-
+export default function FileUpload({
+  onUpload,
+}: {
+  onUpload: (sessionId: string) => void;
+}) {
   const handleFileChange = (event) => {
-    setFile(event.target.files[0]);
+    handleFileUpload(event.target.files[0]);
   };
 
-  const handleFileUpload = async () => {
+  const handleFileUpload = async (file: File | undefined) => {
     if (!file) {
       alert("Please select a file to upload");
       return;
@@ -19,51 +20,15 @@ export default function FileUpload() {
 
     try {
       const data = await uploadFile(file);
-      setSessionId(data.session_id);
-      alert("File uploaded successfully!");
-    } catch (error) {
-      alert(error.message);
-    }
-  };
-
-  const handleAskQuestion = async () => {
-    if (!sessionId) {
-      alert("Please upload a file first");
-      return;
-    }
-
-    try {
-      const data = await askQuestion(sessionId, question);
-      setResponse(data);
+      onUpload(data.session_id);
     } catch (error) {
       alert(error.message);
     }
   };
 
   return (
-    <div>
-      <h1>Welcome to Remix SPA with FastAPI</h1>
-      <div>
-        <input type="file" onChange={handleFileChange} />
-        <button onClick={handleFileUpload}>Upload File</button>
-      </div>
-      {sessionId && (
-        <div>
-          <input
-            type="text"
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            placeholder="Ask a question"
-          />
-          <button onClick={handleAskQuestion}>Ask</button>
-        </div>
-      )}
-      {response && (
-        <div>
-          <h2>Response:</h2>
-          <p>{response}</p>
-        </div>
-      )}
-    </div>
+    <Flex justify="center" align="center" gap="sm">
+      <Input type="file" size="md" onChange={handleFileChange} />
+    </Flex>
   );
 }
