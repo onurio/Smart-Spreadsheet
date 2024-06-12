@@ -17,8 +17,10 @@ def find_table_boundaries(sheet):
     def get_next_bordered_cell(start_row, start_col):
         for r in range(start_row, rows + 1):
             for c in range(start_col, cols + 1):
+                if (r, c) in visited:
+                    continue
                 cell = sheet.cell(r, c)
-                if is_bordered(cell) and (r, c) not in visited:
+                if is_bordered(cell):
                     return r, c
         return None, None
 
@@ -57,7 +59,7 @@ def find_table_boundaries(sheet):
         boundary = get_table_boundary(r, c)
         boundaries.append(boundary)
 
-        start_row, start_col = r, c + 1
+        start_row, start_col = r + 1, 1  # Move to the next row and reset column to 1
 
     return boundaries
 

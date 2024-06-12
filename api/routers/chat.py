@@ -4,7 +4,7 @@ import tempfile
 import pandas as pd
 from pydantic import BaseModel
 from dotenv import load_dotenv
-import api.sheet_processing as sheet_processing
+import sheet_processing
 from openai import OpenAI
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -54,7 +54,7 @@ async def start_chat(file: UploadFile = File(...)):
             "history": [
                 {
                     "role": "system",
-                    "content": "You are a financial advisor. Please provide answers to the following questions based on the provided data.",
+                    "content": "You are a financial advisor. Please provide answers to the following questions based on the provided data. All number values are in USD unless stated otherwise",
                 }
             ],
             "api_key": openai_api_key,
